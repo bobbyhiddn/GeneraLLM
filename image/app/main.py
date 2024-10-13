@@ -4,12 +4,8 @@ from transformers import pipeline
 import os
 import torch
 import logging
-import dotenv
 
 app = FastAPI()
-
-# Load environment variables from .env file
-dotenv.load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

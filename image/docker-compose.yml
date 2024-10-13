@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    container_name: generallm  # Set the container name here
     ports:
       - "8000:8000"
     environment:
