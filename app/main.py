@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from transformers import pipeline
 import os
-from dotenv import load_dotenv  # Correct import for python-dotenv
+from dotenv import load_dotenv
 import torch
 
 app = FastAPI()
@@ -19,8 +19,14 @@ try:
     if not token:
         raise ValueError("HUGGINGFACE_TOKEN environment variable is not set")
 
-    # Load the model using the specified model name
-    model = pipeline("text-generation", model=model_name, use_auth_token=token, torch_dtype=torch.bfloat16, device_map="auto")
+    # Load the model using the specified model name and Hugging Face token
+    model = pipeline(
+        "text-generation",
+        model=model_name,
+        use_auth_token=token,  # Make sure the token is passed correctly
+        torch_dtype=torch.bfloat16,
+        device_map="auto"
+    )
 except Exception as e:
     raise HTTPException(status_code=500, detail=f"Model loading failed: {str(e)}")
 
