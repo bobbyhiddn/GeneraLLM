@@ -1,0 +1,6 @@
+fastapi
+flask
+uvicorn
+transformers
+torch
+accelerate
