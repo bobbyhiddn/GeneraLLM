@@ -1,15 +1,14 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from flask import Flask, request, jsonify
 from transformers import pipeline
 import os
 import torch
 import logging
-import dotenv
+from dotenv import load_dotenv
 
-app = FastAPI()
+app = Flask(__name__)
 
 # Load environment variables from .env file
-dotenv.load_dotenv()
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -30,32 +29,32 @@ try:
         "text-generation",
         model=MODEL_NAME,
         token=HUGGINGFACE_TOKEN,
-        torch_dtype=torch.float32,  # Explicitly set dtype for CPU
-        device_map="cpu",           # Ensure model loads on CPU
-        trust_remote_code=True      # Add if necessary
+        torch_dtype=torch.float32,
+        device_map="cpu",
+        trust_remote_code=True
     )
     logger.info("Model loaded successfully.")
 except Exception as e:
     logger.exception("Model loading failed")
-    raise HTTPException(status_code=500, detail=f"Model loading failed: {str(e)}")
+    raise Exception(f"Model loading failed: {str(e)}")
 
-# Define the request model
-class GenerateRequest(BaseModel):
-    prompt: str
-
-@app.post("/generate")
-async def generate_text(request: GenerateRequest):
+@app.route('/generate', methods=['POST'])
+def generate_text():
     try:
-        prompt = request.prompt
+        data = request.json
+        prompt = data['prompt']
         logger.info(f"Received prompt: {prompt}")
         output = model(prompt, max_length=100)
         generated_text = output[0]["generated_text"]
         logger.info("Text generation successful.")
-        return {"generated_text": generated_text}
+        return jsonify({"generated_text": generated_text})
     except Exception as e:
         logger.exception("Generation failed")
-        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
+        return jsonify({"error": f"Generation failed: {str(e)}"}), 500
 
-@app.get("/")
-async def root():
-    return {"message": "Hello from FastAPI!"}
+@app.route('/')
+def root():
+    return jsonify({"message": "Hello from Flask!"})
+
+if __name__ == '__main__':
+    app.run(debug=True)
